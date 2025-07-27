@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial - Imagga API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1E40AF'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0" id="sidebar">
+        <div class="flex items-center justify-between h-16 px-6 bg-primary text-white">
+            <h2 class="text-xl font-semibold">Imagga WebApp</h2>
+            <button class="lg:hidden" onclick="toggleSidebar()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <nav class="mt-8">
+            <a href="/" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                Análisis de Imágenes
+            </a>
+            <a href="/historial" class="flex items-center px-6 py-3 text-gray-700 bg-gray-100 border-r-4 border-primary">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Historial
+            </a>
+        </nav>
+    </div>
+
+    <div class="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden hidden" id="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="lg:ml-64">
+        <div class="bg-white shadow-sm border-b">
+            <div class="flex items-center justify-between h-16 px-6">
+                <button class="lg:hidden" onclick="toggleSidebar()">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+                <h1 class="text-2xl font-bold text-gray-800">Historial de Análisis</h1>
+                <div class="w-6 lg:hidden"></div>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg text-white p-6 mb-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold">{{ resultados|length }}</h2>
+                            <p class="text-blue-100">Imágenes analizadas en total</p>
+                        </div>
+                        <div class="bg-white bg-opacity-20 rounded-full p-3">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-4 sm:space-y-0">
+                    <div class="flex items-center space-x-4">
+                        <button onclick="clearHistory()" class="flex items-center px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            Limpiar Historial
+                        </button>
+                    </div>
+                    <a href="/" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors">
+                        Nuevo Análisis
+                    </a>
+                </div>
+
+                {% if resultados %}
+                <div class="space-y-6">
+                    {% for resultado in resultados %}
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
+                            <div class="flex items-center space-x-3 mb-2 lg:mb-0">
+                                <div class="bg-primary bg-opacity-10 p-2 rounded-full">
+                                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">Análisis #{{ resultado.id }}</h3>
+                                    <p class="text-sm text-gray-500">{{ resultado.fecha_analisis }}</p>
+                                </div>
+                            </div>
+                            <button class="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                            <div class="lg:col-span-1">
+                                <img src="{{ resultado.imagen_url }}" alt="Imagen analizada" class="w-full h-32 object-cover rounded-lg">
+                            </div>
+                            
+                            <div class="lg:col-span-3 space-y-3">
+                                <div>
+                                    <h4 class="font-medium text-gray-800 mb-2">Etiquetas detectadas:</h4>
+                                    {% if resultado.etiquetas %}
+                                    <div class="flex flex-wrap gap-2">
+                                        {% for etiqueta in resultado.etiquetas %}
+                                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">{{ etiqueta }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <p class="text-gray-500 text-sm">No se detectaron etiquetas</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <div>
+                                    <details class="text-sm">
+                                        <summary class="cursor-pointer text-gray-600 hover:text-gray-800 font-medium">Ver URL de imagen</summary>
+                                        <p class="mt-2 p-3 bg-gray-100 rounded-lg text-gray-700 break-all">{{ resultado.imagen_url }}</p>
+                                    </details>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No hay historial</h3>
+                    <p class="mt-1 text-sm text-gray-500">Aún no has realizado ningún análisis de imágenes.</p>
+                    <div class="mt-6">
+                        <a href="/" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Realizar primer análisis
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        function clearHistory() {
+            if (confirm('¿limpiar todo?')) {
+                fetch('/limpiar_historial', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error al limpiar el historial');
+                    }
+                })
+                .catch(error => {
+                    alert('Error al limpiar el historial: ' + error.message);
+                });
+            }
+        }
+
+        function deleteHistoryItem(id) {
+            if (confirm('¿eliminar?')) {
+                fetch('/eliminar_historial/' + id, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error al eliminar');
+                    }
+                })
+                .catch(error => {
+                    alert('Error al eliminar' + error.message);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis de Imágenes - Imagga API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1E40AF'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0" id="sidebar">
+        <div class="flex items-center justify-between h-16 px-6 bg-primary text-white">
+            <h2 class="text-xl font-semibold">Imagga WebApp</h2>
+            <button class="lg:hidden" onclick="toggleSidebar()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <nav class="mt-8">
+            <a href="/" class="flex items-center px-6 py-3 text-gray-700 bg-gray-100 border-r-4 border-primary">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                Análisis de Imágenes
+            </a>
+            <a href="/historial" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Historial
+            </a>
+        </nav>
+    </div>
+
+    <div class="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden hidden" id="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="lg:ml-64">
+        <div class="bg-white shadow-sm border-b">
+            <div class="flex items-center justify-between h-16 px-6">
+                <button class="lg:hidden" onclick="toggleSidebar()">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+                <h1 class="text-2xl font-bold text-gray-800">Análisis de Imágenes con IA</h1>
+                <div class="w-6 lg:hidden"></div>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <h3 class="text-lg font-semibold text-blue-800 mb-2">¿Cómo usar?</h3>
+                    <p class="text-blue-700">Pega las URLs de las imágenes que quieras analizar. Las imágenes se mostrarán automáticamente para que las puedas verificar antes del análisis.</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h2 class="text-xl font-semibold mb-4">Agregar Imágenes para Análisis</h2>
+                    
+                    <div class="space-y-4" id="url-inputs">
+                        <div class="url-input-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">URL de la Imagen 1:</label>
+                            <input type="url" class="url-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   placeholder="https://ejemplo.com/imagen.jpg" oninput="validateImage(this, 0)">
+                            <div class="image-preview mt-3 hidden">
+                                <img class="w-32 h-32 object-cover rounded-lg shadow-md" src="" alt="Preview">
+                                <p class="text-sm text-green-600 mt-1">✓ Imagen válida</p>
+                            </div>
+                            <div class="error-message mt-2 text-sm text-red-600 hidden"></div>
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="addUrlInput()" class="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Agregar otra imagen
+                    </button>
+
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="analizarImagenes()" id="analyze-btn" disabled
+                                class="px-6 py-3 bg-gray-400 text-white rounded-lg font-semibold disabled:cursor-not-allowed">
+                            <span class="analyze-text">Analizar Imágenes</span>
+                            <span class="loading-text hidden">
+                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Analizando...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="results-section" class="hidden">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-semibold">Resultados del Análisis</h2>
+                            <button onclick="nuevoAnalisis()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors">
+                                Nuevo Análisis
+                            </button>
+                        </div>
+                        <div id="results-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let imageCount = 1;
+        let validImages = [];
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        function addUrlInput() {
+            if (imageCount >= 5) {
+                alert('Máximo 5 imágenes permitidas');
+                return;
+            }
+
+            const container = document.getElementById('url-inputs');
+            const div = document.createElement('div');
+            div.className = 'url-input-group';
+            div.innerHTML = `
+                <label class="block text-sm font-medium text-gray-700 mb-2">URL de la Imagen ${imageCount + 1}:</label>
+                <div class="flex space-x-2">
+                    <input type="url" class="url-input flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                           placeholder="https://ejemplo.com/imagen.jpg" oninput="validateImage(this, ${imageCount})">
+                    <button type="button" onclick="removeUrlInput(this)" class="px-3 py-2 text-red-600 hover:bg-red-50 rounded-md">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="image-preview mt-3 hidden">
+                    <img class="w-32 h-32 object-cover rounded-lg shadow-md" src="" alt="Preview">
+                    <p class="text-sm text-green-600 mt-1">✓ Imagen válida</p>
+                </div>
+                <div class="error-message mt-2 text-sm text-red-600 hidden"></div>
+            `;
+            container.appendChild(div);
+            imageCount++;
+        }
+
+        function removeUrlInput(button) {
+            const group = button.closest('.url-input-group');
+            const input = group.querySelector('.url-input');
+            const index = Array.from(document.querySelectorAll('.url-input')).indexOf(input);
+            
+            if (validImages[index]) {
+                validImages[index] = false;
+            }
+            
+            group.remove();
+            imageCount--;
+            updateAnalyzeButton();
+        }
+
+        async function validateImage(input, index) {
+            const preview = input.closest('.url-input-group').querySelector('.image-preview');
+            const errorMsg = input.closest('.url-input-group').querySelector('.error-message');
+            const img = preview.querySelector('img');
+
+            preview.classList.add('hidden');
+            errorMsg.classList.add('hidden');
+            validImages[index] = false;
+
+            if (!input.value.trim()) {
+                updateAnalyzeButton();
+                return;
+            }
+
+            try {
+                const response = await fetch(`/validar_imagen?url=${encodeURIComponent(input.value)}`);
+                const data = await response.json();
+
+                if (data.valid) {
+                    img.src = input.value;
+                    img.onload = () => {
+                        preview.classList.remove('hidden');
+                        validImages[index] = true;
+                        updateAnalyzeButton();
+                    };
+                    img.onerror = () => {
+                        errorMsg.textContent = 'Error al cargar la imagen';
+                        errorMsg.classList.remove('hidden');
+                        validImages[index] = false;
+                        updateAnalyzeButton();
+                    };
+                } else {
+                    errorMsg.textContent = data.error || 'URL no válida';
+                    errorMsg.classList.remove('hidden');
+                    validImages[index] = false;
+                    updateAnalyzeButton();
+                }
+            } catch (error) {
+                errorMsg.textContent = 'Error al validar la imagen';
+                errorMsg.classList.remove('hidden');
+                validImages[index] = false;
+                updateAnalyzeButton();
+            }
+        }
+
+        function updateAnalyzeButton() {
+            const button = document.getElementById('analyze-btn');
+            const hasValidImages = validImages.some(valid => valid === true);
+            
+            if (hasValidImages) {
+                button.disabled = false;
+                button.className = 'px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-secondary transition-colors';
+            } else {
+                button.disabled = true;
+                button.className = 'px-6 py-3 bg-gray-400 text-white rounded-lg font-semibold disabled:cursor-not-allowed';
+            }
+        }
+
+        async function analizarImagenes() {
+            const button = document.getElementById('analyze-btn');
+            const analyzeText = button.querySelector('.analyze-text');
+            const loadingText = button.querySelector('.loading-text');
+            
+            button.disabled = true;
+            analyzeText.classList.add('hidden');
+            loadingText.classList.remove('hidden');
+
+            const urls = [];
+            document.querySelectorAll('.url-input').forEach((input, index) => {
+                if (validImages[index] && input.value.trim()) {
+                    urls.push(input.value.trim());
+                }
+            });
+
+            try {
+                const response = await fetch('/analizar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ urls: urls })
+                });
+
+                const data = await response.json();
+                mostrarResultados(data.resultados);
+            } catch (error) {
+                alert('Error al analizar las imágenes: ' + error.message);
+            } finally {
+                button.disabled = false;
+                analyzeText.classList.remove('hidden');
+                loadingText.classList.add('hidden');
+            }
+        }
+
+        function mostrarResultados(resultados) {
+            const resultsSection = document.getElementById('results-section');
+            const resultsGrid = document.getElementById('results-grid');
+            
+            resultsGrid.innerHTML = '';
+            
+            resultados.forEach(resultado => {
+                const div = document.createElement('div');
+                div.className = 'bg-gray-50 rounded-lg shadow p-4';
+                
+                if (resultado.etiquetas) {
+                    div.innerHTML = `
+                        <img src="${resultado.url}" class="w-full h-48 object-cover rounded-lg mb-3" alt="Imagen analizada">
+                        <h3 class="font-semibold text-gray-800 mb-2">Etiquetas detectadas:</h3>
+                        <ul class="space-y-1">
+                            ${resultado.etiquetas.map(etiqueta => `<li class="text-sm text-gray-600 bg-white px-2 py-1 rounded">${etiqueta}</li>`).join('')}
+                        </ul>
+                    `;
+                } else {
+                    div.innerHTML = `
+                        <img src="${resultado.url}" class="w-full h-48 object-cover rounded-lg mb-3" alt="Imagen con error">
+                        <p class="text-red-600 text-sm font-medium">${resultado.error}</p>
+                    `;
+                }
+                
+                resultsGrid.appendChild(div);
+            });
+            
+            resultsSection.classList.remove('hidden');
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function nuevoAnalisis() {
+            document.getElementById('url-inputs').innerHTML = `
+                <div class="url-input-group">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">URL de la Imagen 1:</label>
+                    <input type="url" class="url-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                           placeholder="https://ejemplo.com/imagen.jpg" oninput="validateImage(this, 0)">
+                    <div class="image-preview mt-3 hidden">
+                        <img class="w-32 h-32 object-cover rounded-lg shadow-md" src="" alt="Preview">
+                        <p class="text-sm text-green-600 mt-1">✓ Imagen válida</p>
+                    </div>
+                    <div class="error-message mt-2 text-sm text-red-600 hidden"></div>
+                </div>
+            `;
+            
+            imageCount = 1;
+            validImages = [];
+            updateAnalyzeButton();
+            document.getElementById('results-section').classList.add('hidden');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        updateAnalyzeButton();
+    </script>
+</body>
+</html>

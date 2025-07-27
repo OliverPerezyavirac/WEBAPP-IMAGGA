@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados del Análisis - Imagga API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1E40AF'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0" id="sidebar">
+        <div class="flex items-center justify-between h-16 px-6 bg-primary text-white">
+            <h2 class="text-xl font-semibold">Imagga WebApp</h2>
+            <button class="lg:hidden" onclick="toggleSidebar()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <nav class="mt-8">
+            <a href="/" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                Análisis de Imágenes
+            </a>
+            <a href="/historial" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-100 hover:text-gray-700">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Historial
+            </a>
+        </nav>
+    </div>
+
+    <div class="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden hidden" id="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="lg:ml-64">
+        <div class="bg-white shadow-sm border-b">
+            <div class="flex items-center justify-between h-16 px-6">
+                <button class="lg:hidden" onclick="toggleSidebar()">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+                <h1 class="text-2xl font-bold text-gray-800">Resultados del Análisis</h1>
+                <div class="w-6 lg:hidden"></div>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-4 sm:space-y-0">
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-lg font-medium text-gray-700">Análisis completado exitosamente</span>
+                    </div>
+                    <div class="flex space-x-3">
+                        <a href="/" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors">
+                            Nuevo Análisis
+                        </a>
+                        <a href="/historial" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                            Ver Historial
+                        </a>
+                    </div>
+                </div>
+
+                {% if resultados %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for r in resultados %}
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                        <div class="relative">
+                            <img src="{{ r.url }}" alt="Imagen analizada" class="w-full h-48 object-cover">
+                            <div class="absolute top-2 right-2">
+                                {% if r.etiquetas %}
+                                <span class="bg-green-500 text-white px-2 py-1 rounded-full text-xs">✓ Analizado</span>
+                                {% else %}
+                                <span class="bg-red-500 text-white px-2 py-1 rounded-full text-xs">✗ Error</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="p-4">
+                            {% if r.etiquetas %}
+                            <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                </svg>
+                                Etiquetas detectadas
+                            </h3>
+                            <div class="space-y-2">
+                                {% for etiqueta in r.etiquetas %}
+                                <div class="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg">
+                                    <span class="text-sm text-gray-700">{{ etiqueta }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="flex items-center text-red-600">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <p class="font-medium">Error en el análisis</p>
+                                    <p class="text-sm">{{ r.error }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="px-4 pb-4">
+                            <details class="text-xs">
+                                <summary class="cursor-pointer text-gray-500 hover:text-gray-700">Ver URL de imagen</summary>
+                                <p class="mt-2 p-2 bg-gray-100 rounded text-gray-600 break-all">{{ r.url }}</p>
+                            </details>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No hay resultados</h3>
+                    <p class="mt-1 text-sm text-gray-500">No se encontraron resultados para mostrar.</p>
+                    <div class="mt-6">
+                        <a href="/" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Crear nuevo análisis
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>
