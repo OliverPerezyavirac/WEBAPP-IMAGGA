@@ -1,10 +1,11 @@
 # WebApp - Imagga API (SaaS)
 
-Esta aplicación consume el servicio SaaS de Imagga para el análisis de imágenes,Construida con Flask, SQLite y Tailwind y empaquetada en un solo contenedor Docker.
+Esta aplicación consume el servicio SaaS de Imagga para el análisis de imágenes.
+Construida con Flask, SQLite y Tailwind y empaquetada en un solo contenedor Docker.
 
 ## Cómo ejecutar
 
-1. Clona este repositorio: git clone https://github.com/oliverperezyavirac/webapp-imagga.git
+1. Clona este repositorio: git clone https://github.com/OliverPerezyavirac/WEBAPP-IMAGGA
 
 Seguir estos pasos:
     a. cd webapp-imagga
