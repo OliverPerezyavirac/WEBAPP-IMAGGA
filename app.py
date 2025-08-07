@@ -6,6 +6,9 @@ from datetime import datetime
 
 DB_NAME = 'database.db'
 
+# Configuración de las credenciales de Imagga
+
+
 IMAGGA_API_KEY = os.environ.get('IMAGGA_API_KEY', '')
 IMAGGA_API_SECRET = os.environ.get('IMAGGA_API_SECRET', '')
 IMAGGA_ENDPOINT = 'https://api.imagga.com/v2/tags'
