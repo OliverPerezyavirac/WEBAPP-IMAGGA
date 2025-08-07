@@ -6,9 +6,13 @@ from datetime import datetime
 
 DB_NAME = 'database.db'
 
-IMAGGA_API_KEY = ''
-IMAGGA_API_SECRET = ''
+IMAGGA_API_KEY = os.environ.get('IMAGGA_API_KEY', '')
+IMAGGA_API_SECRET = os.environ.get('IMAGGA_API_SECRET', '')
 IMAGGA_ENDPOINT = 'https://api.imagga.com/v2/tags'
+
+if not IMAGGA_API_KEY or not IMAGGA_API_SECRET:
+    print("Atención: Credenciales de imagga no estan, no configuradas")
+    print("Configurar las variables de entorno IMAGGA_API_KEY e IMAGGA_API_SECRET")
 
 def init_db():
     conn = sqlite3.connect(DB_NAME)
